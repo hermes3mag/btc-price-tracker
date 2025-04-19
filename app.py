@@ -1,8 +1,54 @@
 from flask import Flask, render_template
+from db_utils import get_db_connection, close_db_connection
 import psycopg2
 
 # Create the Flask application
 app = Flask(__name__)
+
+@app.route('/routes')
+def list_routes():
+    return {rule.rule: rule.endpoint for rule in app.url_map.iter_rules()}
+    
+@app.route('/test_db')
+def test_db():
+    try:
+        conn = get_db_connection()
+        if conn:
+            return {"status": "Database connection successful"}
+        else:
+            return {"error": "Database connection failed"}
+    except Exception as e:
+        return {"error": str(e)}
+
+def insert_price_to_db(price_usd):
+    print(f"Attempting to insert price: {price_usd}")  # Debugging
+    conn = get_db_connection()
+    if not conn:
+        return {"error": "Database connection failed"}, 500
+    try:
+        cur = conn.cursor()
+        insert_query = """
+        INSERT INTO btc_prices (timestamp, price_usd)
+        VALUES (CURRENT_TIMESTAMP, %s);
+        """
+        print(f"Executing query: {insert_query} with price: {price_usd}")
+        cur.execute(insert_query, (price_usd,))
+        conn.commit()
+        return {"status": "success"}, 200
+    except Exception as e:
+        print(f"Error inserting price: {e}")
+        return {"error": str(e)}, 500
+    finally:
+        cur.close()
+        close_db_connection(conn)
+
+@app.route('/insert_price/<float:price>')
+def insert_price(price_usd):
+    return insert_price_to_db(price_usd)
+
+@app.route('/test_insert/<float:price>')
+def test_insert(price):
+    return insert_price_to_db(price)
 
 # Database connection
 def get_db_connection():
@@ -109,3 +155,6 @@ def support():
 # Run the application
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+# Note: Ensure that the database and table exist before running the application.
+# You can create the table using the init_db.py script provided earlier.
+# Make sure to set the DATABASE_URL environment variable in your Dockerfile or docker-compose.yml
