@@ -36,6 +36,7 @@ def insert_price_to_db(price_usd):
         conn.commit()
         return {"status": "success"}, 200
     except Exception as e:
+        conn.rollback()
         print(f"Error inserting price: {e}")
         return {"error": str(e)}, 500
     finally:
