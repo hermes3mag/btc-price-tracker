@@ -10,6 +10,19 @@ def mock_db_connection():
     mock_conn.cursor.return_value = mock_cursor
     return mock_conn, mock_cursor
 
+@patch('app.get_db_connection')
+def test_db_connection_failure(mock_get_db_connection):
+    # Arrange
+    mock_get_db_connection.return_value = None
+
+    # Act
+    with app.test_client() as client:
+        response = client.get('/db_test')
+
+    # Assert
+    assert response.status_code == 500
+    assert response.json == {"error": "Database connection failed"}
+
 @patch('app.get_db_connection')  # Mock the get_db_connection function
 def test_insert_price_success(mock_get_db_connection, mock_db_connection):
     # Arrange

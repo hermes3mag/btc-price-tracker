@@ -1,0 +1,131 @@
+Bitcoin Price Tracker
+A Flask web app to track Bitcoin prices using the CoinGecko API, store data in PostgreSQL, and visualize trends with Chart.js. Runs in Docker and deploys to Render (Flask) and Neon (PostgreSQL). Built with GitHub Copilot and Grok AI.
+Technologies
+
+Flask 2.3.2 (Python 3.9)
+PostgreSQL 15 (Dockerized)
+Chart.js
+CoinGecko API
+Docker, Docker Compose
+Render, Neon
+
+Build and Run
+
+Clone the Repository:
+git clone https://github.com/hermes3mag/btc-price-tracker.git
+cd btc-price-tracker
+
+
+Ensure docker-compose.yml:
+version: '3.8'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5000"
+    environment:
+      - DATABASE_URL=postgresql://bitcoin_user:bitcoin_password@db:5432/bitcoin_db
+      - FLASK_ENV=development
+      - FLASK_APP=app.py
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: bitcoin_user
+      POSTGRES_PASSWORD: bitcoin_password
+      POSTGRES_DB: bitcoin_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+volumes:
+  db_data:
+
+
+Update requirements.txt:
+blinker==1.9.0
+click==8.1.8
+Flask==3.1.0
+itsdangerous==2.2.0
+Jinja2==3.1.6
+MarkupSafe==3.0.2
+Werkzeug==3.1.3
+flask
+psycopg2
+psycopg2-binary
+schedule
+gunicorn
+
+
+Build and Run:
+docker-compose up --build
+
+
+Initialize Database:
+docker exec -it btc-price-tracker-db-1 psql -U bitcoin_user -d bitcoin_db
+
+CREATE TABLE btc_prices (
+    id SERIAL PRIMARY KEY,
+    timestamp TIMESTAMP NOT NULL,
+    price_usd FLOAT NOT NULL
+);
+
+
+
+Usage
+
+Access: Open http://localhost:5001 for the dashboard.
+Fetch Price: Visit http://localhost:5001/price to fetch and store a Bitcoin price.
+View Data: Use `http://localhost:5001/pr-updates every 10 minutes.
+
+Deployment
+
+Flask on Render:
+
+Push to GitHub.
+Create a Render web service (Docker).
+Set:DATABASE_URL=postgresql://bitcoin_user:secure_password@neon-host:5432/bitcoin_db
+FLASK_ENV=production
+
+
+Use production Dockerfile:FROM python:3.9-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+ENV FLASK_ENV=production
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+
+
+Add Procfile for scheduler:worker: python scheduler.py
+
+
+
+
+PostgreSQL on Neon:
+
+Sign up at neon.tech.
+Create a database, get DATABASE_URL.
+Set DATABASE_URL in Render.
+Initialize btc_prices table.
+
+
+
+Security
+
+Use .env for DATABASE_URL.
+Add .gitignore:.env
+venv/
+__pycache__/
+*.pyc
+
+
+Use strong passwords in production.
+
+
+Built by hermes3mag

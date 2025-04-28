@@ -9,8 +9,8 @@ app = Flask(__name__)
 def list_routes():
     return {rule.rule: rule.endpoint for rule in app.url_map.iter_rules()}
     
-@app.route('/test_db')
-def test_db():
+@app.route('/db_test')
+def db_test():
     try:
         conn = get_db_connection()
         if conn:
@@ -47,8 +47,8 @@ def insert_price_to_db(price_usd):
 def insert_price(price_usd):
     return insert_price_to_db(price_usd)
 
-@app.route('/test_insert/<float:price>')
-def test_insert(price):
+@app.route('/insert_test/<float:price>')
+def insert_test(price):
     return insert_price_to_db(price)
 
 # Database connection
