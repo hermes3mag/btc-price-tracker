@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from app import insert_price_to_db
+from app import app,insert_price_to_db
 
 # Mock the database connection
 @pytest.fixture

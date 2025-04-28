@@ -14,9 +14,9 @@ def db_test():
     try:
         conn = get_db_connection()
         if conn:
-            return {"status": "Database connection successful"}
+            return {"status": "Database connection successful"}, 200
         else:
-            return {"error": "Database connection failed"}
+            return {"error": "Database connection failed"}, 500
     except Exception as e:
         return {"error": str(e)}
 
