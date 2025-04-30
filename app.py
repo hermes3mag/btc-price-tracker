@@ -70,6 +70,36 @@ def insert_price(price_usd):
 def insert_test(price):
     return insert_price_to_db(price)
 
+@app.route('/health')
+def health_check():
+    # Check if the `btc_prices` table exists in the database
+    try:
+        conn = get_db_connection()
+        if not conn:
+            return {"status": "error", "message": "Database connection failed"}, 500
+
+        cur = conn.cursor()
+        # Query to check if the `btc_prices` table exists
+        cur.execute("""
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_name = 'btc_prices'
+            );
+        """)
+        table_exists = cur.fetchone()[0]
+
+        if table_exists:
+            return {"status": "success", "message": "Table `btc_prices` exists"}, 200
+        else:
+            return {"status": "error", "message": "Table `btc_prices` does not exist"}, 500
+    except Exception as e:
+        print(f"Error during health check: {e}")
+        return {"status": "error", "message": str(e)}, 500
+    finally:
+        if conn:
+            cur.close()
+            close_db_connection(conn)
+
 # Database connection
 def get_db_connection():
     conn = psycopg2.connect(
