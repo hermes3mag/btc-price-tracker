@@ -43,7 +43,7 @@ def insert_price_to_db(price_usd):
         cur.close()
         close_db_connection(conn)
 
-@app.route('/insert_price/<float:price>')
+@app.route('/insert_price/<float:price_usd>')
 def insert_price(price_usd):
     return insert_price_to_db(price_usd)
 

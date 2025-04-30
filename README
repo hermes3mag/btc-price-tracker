@@ -62,20 +62,11 @@ schedule
 gunicorn
 
 
+Initialize Database: 
+inti_db.py
+
 Build and Run:
 docker-compose up --build
-
-
-Initialize Database:
-docker exec -it btc-price-tracker-db-1 psql -U bitcoin_user -d bitcoin_db
-
-CREATE TABLE btc_prices (
-    id SERIAL PRIMARY KEY,
-    timestamp TIMESTAMP NOT NULL,
-    price_usd FLOAT NOT NULL
-);
-
-
 
 Usage
 
