@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 from db_utils import get_db_connection, close_db_connection
 import psycopg2
+import requests
 
 # Create the Flask application
 app = Flask(__name__)
@@ -42,6 +43,24 @@ def insert_price_to_db(price_usd):
     finally:
         cur.close()
         close_db_connection(conn)
+
+@app.route('/price')
+def fetch_and_store_price():
+    # Fetch the Bitcoin price from the CoinGecko API
+    try:
+        response = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd")
+        response.raise_for_status()  # Raise an error for HTTP issues
+        data = response.json()
+        price_usd = data["bitcoin"]["usd"]
+
+        # Insert the price into the database
+        return insert_price_to_db(price_usd)
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching Bitcoin price: {e}")
+        return {"error": "Failed to fetch Bitcoin price"}, 500
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        return {"error": "An unexpected error occurred"}, 500
 
 @app.route('/insert_price/<float:price_usd>')
 def insert_price(price_usd):
